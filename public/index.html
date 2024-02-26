@@ -1,19 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GPT Prompt Template</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            /* height: 100vh; */
+            font-family: Arial, sans-serif;
+        }
+
+        #inputSection,
+        #outputSection {
+            flex: 1 1 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            /* border: 1px black solid; */
+            height: 90vh;
+        }
+
+        #promptForm {
+            width: 100%;
+            height: 100%;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            margin-bottom: 20px;
+        }
+
+        #response {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 100%;
+            /* Or 'auto' to grow with content */
+            /* overflow-y: auto; */
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Test Prompt Endpoint</h1>
-    <form id="promptForm">
-        <input type="text" id="promptInput" placeholder="Enter your prompt here" required>
-        <button type="submit">Send Prompt</button>
-    </form>
-    <div id="response"></div>
-    <div id="loading" style="display: none;">Loading...</div>
+    <div id="inputSection">
+        <h2>Input</h2>
+        <form id="promptForm">
+            <textarea id="promptInput" placeholder="Enter your prompt here" required></textarea>
+            <button type="submit">Send Prompt</button>
+        </form>
+        <div id="loading" style="display: none;">Loading...</div>
+    </div>
+    <div id="outputSection">
+        <h2>Response</h2>
+        <div id="response"></div>
+    </div>
     <script src="app.js"></script>
 </body>
 

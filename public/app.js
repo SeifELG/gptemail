@@ -9,17 +9,24 @@ document.getElementById('promptForm').addEventListener('submit', function (e) {
 
     const promptInput = document.getElementById('promptInput').value;
 
-    fetch('/prompt', {
+    // pass these in as system prompts rather than preprompts?
+
+    // const prePrompt = "Below is an exerpt from a textbook. Convert the text into bulletpoint form. \n\n"
+    // const prePrompt = "Below is an exerpt from a textbook. Give me a one line summary of what it is about. \n\n"
+    // const prePrompt = "Below is an exerpt from a textbook. Give me all the keywords and concepts covered here. \n\n"
+    const prePrompt = "Below is an exerpt from a textbook. Conver this text into a mnemonic medium. This means returning question and answer pairs. The answers should be very short (a word or two) and specific. You can cover the same area with multiple questions. \n\n"
+
+    fetch('/prompt-markdown', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: promptInput }),
+        body: JSON.stringify({ prompt: prePrompt + promptInput }),
     })
         .then(response => response.json())
         .then(data => {
-            const contentString = data.choices[0].message.content;
-            document.getElementById('response').innerText = contentString;
+            // const contentString = data.choices[0].message.content;
+            document.getElementById('response').innerHTML = data;
         })
         .catch(error => {
             console.error('Error:', error);

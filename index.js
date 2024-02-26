@@ -3,6 +3,7 @@ require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const OpenAI = require('openai');
+const marked = require('marked')
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -24,7 +25,7 @@ app.post("/echo", (req, res) => {
 app.post("/prompt", async (req, res) => {
     try {
         const data = req.body.prompt;
-        const chatCompletion = await simplePrompt(data);
+        const chatCompletion = await simplePrompt({ input: data });
         res.status(200).json(chatCompletion);
     } catch (error) {
         console.error("Error", error);
@@ -32,10 +33,25 @@ app.post("/prompt", async (req, res) => {
     }
 });
 
-async function simplePrompt(inputStr) {
+app.post("/prompt-markdown", async (req, res) => {
+    try {
+        const data = req.body.prompt;
+        const chatCompletion = await simplePrompt({ input: data });
+
+        const markdown = marked.parse(chatCompletion.choices[0].message.content)
+
+        res.status(200).json(markdown);
+    } catch (error) {
+        console.error("Error", error);
+        res.status(500).send("An error occurred while processing your request.");
+    }
+});
+
+async function simplePrompt({ input }) {
     const chatCompletion = await openai.chat.completions.create({
-        messages: [{ role: 'user', content: inputStr }],
-        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: input }],
+        model: 'gpt-4-turbo-preview',
+        // model: 'gpt-3.5-turbo',
     });
     return chatCompletion;
 }
