@@ -62,7 +62,7 @@ app.post("/to-questions", async (req, res) => {
         const chatCompletion = await convertToQA({ input: data });
 
 
-        res.status(200).json(chatCompletion.choices[0].message.content);
+        res.status(200).json(JSON.parse(chatCompletion.choices[0].message.content));
     } catch (error) {
         console.error("Error", error);
         res.status(500).send("An error occurred while processing your request.");

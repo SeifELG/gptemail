@@ -26,8 +26,31 @@ document.getElementById('promptForm').addEventListener('submit', function (e) {
     })
         .then(response => response.json())
         .then(data => {
-            // const contentString = data.choices[0].message.content;
-            document.getElementById('response').innerHTML = data;
+            // document.getElementById('response').innerHTML = data;
+            console.log(data)
+            console.log(data.questions)
+            const container = document.getElementById('response');
+
+            data.questions.forEach((qa) => {
+                // Create a div for each Q&A pair
+                const qaDiv = document.createElement('div');
+
+                // Create and append the question
+                const questionP = document.createElement('p');
+                questionP.textContent = `Question: ${qa.question}`;
+                qaDiv.appendChild(questionP);
+
+                // Create and append the answer
+                const answerP = document.createElement('p');
+                answerP.classList.add('answer');
+                answerP.textContent = `Answer: ${qa.answer}`;
+                qaDiv.appendChild(answerP);
+                answerP.onclick = function() {
+                    this.classList.toggle('revealed');
+                };
+                // Append the Q&A div to the container
+                container.appendChild(qaDiv);
+            });
         })
         .catch(error => {
             console.error('Error:', error);
