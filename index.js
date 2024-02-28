@@ -56,6 +56,29 @@ async function simplePrompt({ input }) {
     return chatCompletion;
 }
 
+app.post("/to-questions", async (req, res) => {
+    try {
+        const data = req.body.prompt;
+        const chatCompletion = await convertToQA({ input: data });
+
+
+        res.status(200).json(chatCompletion.choices[0].message.content);
+    } catch (error) {
+        console.error("Error", error);
+        res.status(500).send("An error occurred while processing your request.");
+    }
+});
+
+async function convertToQA({ input }) {
+    const systemPrompt = "You recieve as an input an exerpt from a textbook. You return valid JSON only. You create question and answers based on the material provided. You return an array of question and answer pairs"
+    const chatCompletion = await openai.chat.completions.create({
+        messages: [ {"role": "system", "content": systemPrompt}, { role: 'user', content: input }],
+        model: 'gpt-4-turbo-preview',
+        response_format: { "type": "json_object" }
+    });
+    return chatCompletion;
+}
+
 const PORT = 3001 || process.env.PORT;
 
 app.listen(PORT, () => {
