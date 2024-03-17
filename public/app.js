@@ -8,19 +8,22 @@ document.getElementById('promptForm').addEventListener('submit', function (e) {
     submitButton.disabled = true;
 
     const promptInput = document.getElementById('promptInput').value;
-    const prePrompt = ""
+    const password = document.getElementById('password').value;
+    const isGPT4 = document.getElementById('isGPT4').checked;
 
     fetch('/proofread', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: prePrompt + promptInput }),
+        body: JSON.stringify({ prompt:promptInput, isGPT4, password }),
     })
         .then(response => response.json())
         .then(data => {
            
-            console.log(data)
+            // console.log(isGPT4)
+            // console.log(password)
+            // console.log(data)
             const container = document.getElementById('response');
             container.innerHTML = data.parsed
         })
