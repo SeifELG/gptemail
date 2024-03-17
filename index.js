@@ -9,6 +9,8 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
+const API_PASSWORD = process.env.API_PASSWORD
+
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')))
@@ -27,6 +29,26 @@ app.post("/prompt", async (req, res) => {
         const data = req.body.prompt;
         const chatCompletion = await simplePrompt({ input: data });
         res.status(200).json(chatCompletion);
+    } catch (error) {
+        console.error("Error", error);
+        res.status(500).send("An error occurred while processing your request.");
+    }
+});
+
+
+app.post("/proofread", async (req, res) => {
+    try {
+        const data = req.body.prompt;
+        const chatCompletion = await fixEmail({ input: data });
+
+        const returnObject = {
+            input: data,
+            output: chatCompletion.choices[0].message.content,
+            parsed: marked.parse(chatCompletion.choices[0].message.content)
+        }
+
+        // res.status(200).json(marked.parse(chatCompletion.choices[0].message.content));
+        res.status(200).json(returnObject);
     } catch (error) {
         console.error("Error", error);
         res.status(500).send("An error occurred while processing your request.");
@@ -68,6 +90,16 @@ app.post("/to-questions", async (req, res) => {
         res.status(500).send("An error occurred while processing your request.");
     }
 });
+
+async function fixEmail({ input }) {
+    const systemPrompt = "You are a proofreader. You recieve an email as a prompt and return the corrected email. You just return the corrected text and nothing else. You fix spelling and grammar mistakes and any odd words or language that a non-native speaker might get wrong."
+    const chatCompletion = await openai.chat.completions.create({
+        messages: [ {"role": "system", "content": systemPrompt}, { role: 'user', content: input }],
+        // model: 'gpt-4-turbo-preview',
+        model: 'gpt-3.5-turbo',
+    });
+    return chatCompletion;
+}
 
 async function convertToQA({ input }) {
     const systemPrompt = "You recieve as an input an exerpt from a textbook. You return valid JSON only. You create question and answers based on the material provided. You return an array of question and answer pairs"
