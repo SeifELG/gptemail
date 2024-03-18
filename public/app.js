@@ -23,9 +23,11 @@ document.getElementById('promptForm').addEventListener('submit', function (e) {
            
             // console.log(isGPT4)
             // console.log(password)
-            // console.log(data)
-            const container = document.getElementById('response');
-            container.innerHTML = data.parsed
+            console.log(data)
+            const responseDiv = document.getElementById('response');
+            const diffDiv = document.getElementById('diff');
+            responseDiv.innerHTML = data.parsed;
+            diffDiv.innerHTML = data.diff;
         })
         .catch(error => {
             console.error('Error:', error);

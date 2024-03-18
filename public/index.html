@@ -47,6 +47,15 @@
             /* overflow-y: auto; */
         }
 
+        #diff {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 100%;
+            /* Or 'auto' to grow with content */
+            /* overflow-y: auto; */
+        }
+
         .answer {
             background-color: black;
             color: black;
@@ -54,8 +63,18 @@
             padding: 5px;
             margin-top: 5px;
         }
+
         .answer.revealed {
             background-color: white;
+        }
+
+        .removed {
+            text-decoration: line-through;
+            color: red;
+        }
+
+        .added {
+            color: red;
         }
     </style>
 </head>
@@ -74,6 +93,7 @@
     <div id="outputSection">
         <h2>Fixed Email</h2>
         <div id="response"></div>
+        <div id="diff"></div>
     </div>
     <script src="app.js"></script>
 </body>

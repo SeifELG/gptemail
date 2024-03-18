@@ -39,11 +39,16 @@ app.post("/proofread", async (req, res) => {
 
         const email = req.body.prompt;
         const chatCompletion = await fixEmail({ input: email, isGPT4 });
+        const chatCompletionContent = chatCompletion.choices[0].message.content;
+
+
+        const diff = generateDiffHtml(email, chatCompletionContent)
 
         const returnObject = {
             input: email,
-            output: chatCompletion.choices[0].message.content,
-            parsed: marked.parse(chatCompletion.choices[0].message.content)
+            output: chatCompletionContent,
+            parsed: marked.parse(chatCompletionContent),
+            diff,
         }
 
         res.status(200).json(returnObject);
@@ -132,3 +137,41 @@ const PORT = 3001 || process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+
+function generateDiffHtml(original, corrected) {
+    // This is a very simplistic approach and might not work well for all cases.
+    // For actual projects, consider using a diff library like diff-match-patch.
+    
+    let result = "";
+    const originalWords = original.split(' ');
+    const correctedWords = corrected.split(' ');
+    
+    let i = 0, j = 0;
+    while (i < originalWords.length && j < correctedWords.length) {
+        if (originalWords[i] === correctedWords[j]) {
+            result += originalWords[i] + " ";
+            i++;
+            j++;
+        } else {
+            if (i < originalWords.length) {
+                result += `<span class="removed">${originalWords[i]}</span> `;
+                i++;
+            }
+            if (j < correctedWords.length) {
+                result += `<span class="added">${correctedWords[j]}</span> `;
+                j++;
+            }
+        }
+    }
+    
+    // Handle any remaining words in either the original or corrected texts
+    for (; i < originalWords.length; i++) {
+        result += `<span class="removed">${originalWords[i]}</span> `;
+    }
+    for (; j < correctedWords.length; j++) {
+        result += `<span class="added">${correctedWords[j]}</span> `;
+    }
+    
+    return result;
+}
