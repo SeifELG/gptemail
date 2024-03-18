@@ -4,6 +4,7 @@ const path = require("path");
 const express = require("express");
 const OpenAI = require('openai');
 const marked = require('marked')
+const DiffMatchPatch  = require('diff-match-patch')
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -28,14 +29,13 @@ app.post("/echo", (req, res) => {
 app.post("/proofread", async (req, res) => {
     try {
         console.log(req.body)
-  
-        if(req.body.password !== API_PASSWORD){
-            res.status(200).json({output:"wrong password", parsed:"wrong password"});
-            return
-        }
 
         const isGPT4 = req.body.isGPT4;
-
+  
+        if(isGPT4 && req.body.password !== API_PASSWORD){
+            res.status(200).json({output:"password needed for smarter AI", parsed:"password needed for smarter AI"});
+            return
+        }
 
         const email = req.body.prompt;
         const chatCompletion = await fixEmail({ input: email, isGPT4 });
@@ -62,7 +62,6 @@ async function fixEmail({ input, isGPT4 }) {
     const systemPrompt = "You are a proofreader. You recieve an email as a prompt and return the corrected email. You just return the corrected text and nothing else. You fix spelling and grammar mistakes and any odd words or language that a non-native speaker might get wrong."
     const chatCompletion = await openai.chat.completions.create({
         messages: [ {"role": "system", "content": systemPrompt}, { role: 'user', content: input }],
-        // model: 'gpt-4-turbo-preview',
         model: isGPT4 ? 'gpt-4-turbo-preview' :'gpt-3.5-turbo',
     });
     return chatCompletion;
@@ -139,7 +138,7 @@ app.listen(PORT, () => {
 });
 
 
-function generateDiffHtml(original, corrected) {
+function generateDiffHtmlOld(original, corrected) {
     // This is a very simplistic approach and might not work well for all cases.
     // For actual projects, consider using a diff library like diff-match-patch.
     
@@ -174,4 +173,25 @@ function generateDiffHtml(original, corrected) {
     }
     
     return result;
+}
+
+function generateDiffHtml(original, corrected) {
+    const dmp = new DiffMatchPatch();
+    const diffs = dmp.diff_main(original, corrected);
+    dmp.diff_cleanupSemantic(diffs);
+
+    const diffHtml = diffs.map(([operation, text]) => {
+        switch (operation) {
+            case 0: return text; // No change
+            case -1: return `<span class="removed">${escapeHtml(text)}</span>`; // Deletion
+            case 1: return `<span class="added">${escapeHtml(text)}</span>`; // Insertion
+        }
+    }).join('');
+
+    return diffHtml;
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
