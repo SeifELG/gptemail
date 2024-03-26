@@ -177,18 +177,25 @@ function generateDiffHtmlOld(original, corrected) {
 
 function generateDiffHtml(original, corrected) {
     const dmp = new DiffMatchPatch();
-    const diffs = dmp.diff_main(original, corrected);
+    let diffs = dmp.diff_main(original, corrected);
     dmp.diff_cleanupSemantic(diffs);
 
-    const diffHtml = diffs.map(([operation, text]) => {
-        switch (operation) {
-            case 0: return text; // No change
-            case -1: return `<span class="removed">${escapeHtml(text)}</span>`; // Deletion
-            case 1: return `<span class="added">${escapeHtml(text)}</span>`; // Insertion
+    let html = [];
+    diffs.forEach(function([op, data]) {
+        let text = data.replace(/\n/g, '<br>').replace(/\n\n/g, '<p></p>');
+        switch (op) {
+            case 0: // No change
+                html.push(`<span>${text}</span>`);
+                break;
+            case -1: // Deletion
+                html.push(`<span class="removed">${text}</span>`);
+                break;
+            case 1: // Insertion
+                html.push(`<span class="added">${text}</span>`);
+                break;
         }
-    }).join('');
-
-    return diffHtml;
+    });
+    return html.join('');
 }
 
 function escapeHtml(text) {
