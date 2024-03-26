@@ -30,17 +30,15 @@ app.post("/proofread", async (req, res) => {
     try {
         console.log(req.body)
 
-        const isGPT4 = req.body.isGPT4;
-  
-        if(isGPT4 && req.body.password !== API_PASSWORD){
-            res.status(200).json({output:"password needed for smarter AI", parsed:"password needed for smarter AI"});
-            return
-        }
+        // const isGPT4 = req.body.isGPT4;
+        // if(isGPT4 && req.body.password !== API_PASSWORD){
+        //     res.status(200).json({output:"password needed for smarter AI", parsed:"password needed for smarter AI"});
+        //     return
+        // }
 
         const email = req.body.prompt;
-        const chatCompletion = await fixEmail({ input: email, isGPT4 });
+        const chatCompletion = await fixEmail({ input: email });
         const chatCompletionContent = chatCompletion.choices[0].message.content;
-
 
         const diff = generateDiffHtml(email, chatCompletionContent)
 
@@ -58,84 +56,25 @@ app.post("/proofread", async (req, res) => {
     }
 });
 
-async function fixEmail({ input, isGPT4 }) {
+async function fixEmail({ input }) {
     const systemPrompt = "You are a proofreader. You recieve an email as a prompt and return the corrected email. You just return the corrected text and nothing else. You fix spelling and grammar mistakes and any odd words or language that a non-native speaker might get wrong."
     const chatCompletion = await openai.chat.completions.create({
         messages: [ {"role": "system", "content": systemPrompt}, { role: 'user', content: input }],
-        model: isGPT4 ? 'gpt-4-turbo-preview' :'gpt-3.5-turbo',
+        // model: isGPT4 ? 'gpt-4-turbo-preview' :'gpt-3.5-turbo',
+        model: 'gpt-3.5-turbo',
     });
     return chatCompletion;
 }
 
-
-
-
-
-
-app.post("/prompt", async (req, res) => {
-    try {
-        const data = req.body.prompt;
-        const chatCompletion = await simplePrompt({ input: data });
-        res.status(200).json(chatCompletion);
-    } catch (error) {
-        console.error("Error", error);
-        res.status(500).send("An error occurred while processing your request.");
-    }
-});
-
-
-app.post("/prompt-markdown", async (req, res) => {
-    try {
-        const data = req.body.prompt;
-        const chatCompletion = await simplePrompt({ input: data });
-
-        const markdown = marked.parse(chatCompletion.choices[0].message.content)
-
-        res.status(200).json(markdown);
-    } catch (error) {
-        console.error("Error", error);
-        res.status(500).send("An error occurred while processing your request.");
-    }
-});
-
-async function simplePrompt({ input }) {
-    const chatCompletion = await openai.chat.completions.create({
-        messages: [{ role: 'user', content: input }],
-        model: 'gpt-4-turbo-preview',
-        // model: 'gpt-3.5-turbo',
-    });
-    return chatCompletion;
-}
-
-app.post("/to-questions", async (req, res) => {
-    try {
-        const data = req.body.prompt;
-        const chatCompletion = await convertToQA({ input: data });
-
-
-        res.status(200).json(JSON.parse(chatCompletion.choices[0].message.content));
-    } catch (error) {
-        console.error("Error", error);
-        res.status(500).send("An error occurred while processing your request.");
-    }
-});
-
-
-async function convertToQA({ input }) {
-    const systemPrompt = "You recieve as an input an exerpt from a textbook. You return valid JSON only. You create question and answers based on the material provided. You return an array of question and answer pairs"
-    const chatCompletion = await openai.chat.completions.create({
-        messages: [ {"role": "system", "content": systemPrompt}, { role: 'user', content: input }],
-        model: 'gpt-4-turbo-preview',
-        response_format: { "type": "json_object" }
-    });
-    return chatCompletion;
-}
 
 const PORT = 3001 || process.env.PORT;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+
+
 
 
 function generateDiffHtmlOld(original, corrected) {
