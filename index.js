@@ -36,7 +36,7 @@ app.post("/proofread", async (req, res) => {
         //     return
         // }
 
-        const email = req.body.prompt;
+        const email = escapeHtml(req.body.prompt);
         const chatCompletion = await fixEmail({ input: email });
         const chatCompletionContent = chatCompletion.choices[0].message.content;
 
@@ -57,7 +57,7 @@ app.post("/proofread", async (req, res) => {
 });
 
 async function fixEmail({ input }) {
-    const systemPrompt = "You are a proofreader. You recieve an email as a prompt and return the corrected email. You just return the corrected text and nothing else. You fix spelling and grammar mistakes and any odd words or language that a non-native speaker might get wrong."
+    const systemPrompt = "You are a proofreader. You recieve an email as a prompt and return the corrected email. You just return the corrected text and nothing else. You fix spelling and grammar mistakes and any odd words or language that a non-native speaker might get wrong. Remove any html tags."
     const chatCompletion = await openai.chat.completions.create({
         messages: [ {"role": "system", "content": systemPrompt}, { role: 'user', content: input }],
         // model: isGPT4 ? 'gpt-4-turbo-preview' :'gpt-3.5-turbo',
