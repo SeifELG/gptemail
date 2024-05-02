@@ -2,10 +2,13 @@ document.getElementById('promptForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
     // Show loading indicator and disable the submit button
-    const loadingIndicator = document.getElementById('loading');
+    
+    // const loadingIndicator = document.getElementById('loading');
+    // loadingIndicator.style.display = 'block';
+
     const submitButton = this.querySelector('button[type="submit"]');
-    loadingIndicator.style.display = 'block';
     submitButton.disabled = true;
+    submitButton.innerHTML = "Loading...";
 
     const promptInput = document.getElementById('promptInput').value;
     // const password = document.getElementById('password').value;
@@ -34,7 +37,8 @@ document.getElementById('promptForm').addEventListener('submit', function (e) {
         })
         .finally(() => {
             // Hide loading indicator and re-enable the submit button
-            loadingIndicator.style.display = 'none';
+            // loadingIndicator.style.display = 'none';
             submitButton.disabled = false;
+            submitButton.innerHTML = "Fix my email";
         });
 });
